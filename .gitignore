@@ -1,0 +1,51 @@
+# Local configuration (12-factor)
+.env
+.env.local
+.env.*.local
+
+# Generated files (derived from .env via scripts/generate-envs.sh)
+firmware/include/generated_config.h
+firmware/include/secrets.h
+companion-compose/.env
+mosquitto-config/passwd
+mosquitto-config/acl
+telegraf-configs/*.conf
+
+# Secrets
+secrets/
+*.pem
+*.key
+*.p12
+
+# Build artifacts
+firmware-builds/
+.pio/
+.cache/
+__pycache__/
+*.pyc
+*.pyo
+node_modules/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.egg-info/
+build/
+dist/
+
+# Tools / plugins locais (não vão pro repo público)
+.remember/
+.claude/
+
+# Design specs e plans internos (mantidos só localmente)
+docs/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
