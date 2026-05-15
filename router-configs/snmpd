@@ -1,0 +1,34 @@
+config agent 'agent'
+    option agentaddress 'UDP:<ROUTER_IP>:161'
+
+config agentx 'agentx'
+    option agentxsocket '/var/run/agentx.sock'
+
+config com2sec 'tdisplay_ro'
+    option secname 'ro'
+    option source '<LAN_CIDR>'
+    option community '<SNMP_COMMUNITY>'
+
+config group 'tdisplay_ro_v2c'
+    option group 'tdisplay_ro'
+    option version 'v2c'
+    option secname 'ro'
+
+config view 'all'
+    option viewname 'all'
+    option type 'included'
+    option oid '.1'
+
+config access 'tdisplay_ro_access'
+    option group 'tdisplay_ro'
+    option context 'none'
+    option version 'v2c'
+    option level 'noauth'
+    option prefix 'exact'
+    option read 'all'
+    option write 'none'
+    option notify 'none'
+
+config system 'system'
+    option sysLocation 'local-network'
+    option sysContact 'admin@local'
