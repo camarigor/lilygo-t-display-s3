@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "stats/<host>/disk",
+  "type": "object",
+  "required": ["ts", "filesystems"],
+  "properties": {
+    "ts": { "type": "integer", "minimum": 0 },
+    "filesystems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["mount", "used_pct"],
+        "properties": {
+          "mount":    { "type": "string", "maxLength": 64 },
+          "used_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+          "free_gb":  { "type": "number", "minimum": 0 }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

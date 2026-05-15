@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "notifications/<source>",
+  "type": "object",
+  "required": ["ts", "id", "source", "summary", "body"],
+  "properties": {
+    "ts":       { "type": "integer", "minimum": 0 },
+    "id":       { "type": "string", "maxLength": 32 },
+    "source":   { "type": "string", "enum": ["teams", "telegram"] },
+    "app_name": { "type": "string", "maxLength": 64 },
+    "summary":  { "type": "string", "maxLength": 256 },
+    "body":     { "type": "string", "maxLength": 200 },
+    "icon":     { "type": "string", "maxLength": 32 },
+    "urgency":  { "type": "string", "enum": ["low", "normal", "critical"] }
+  },
+  "additionalProperties": false
+}

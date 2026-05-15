@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "claude/usage",
+  "type": "object",
+  "required": ["ts", "session", "weekly"],
+  "properties": {
+    "ts": { "type": "integer", "minimum": 0 },
+    "session": {
+      "type": "object",
+      "required": ["tokens_used", "limit", "pct"],
+      "properties": {
+        "tokens_used": { "type": "integer", "minimum": 0 },
+        "limit":       { "type": "integer", "minimum": 1 },
+        "pct":         { "type": "number", "minimum": 0, "maximum": 100 },
+        "rate_tpm":    { "type": "number", "minimum": 0 }
+      }
+    },
+    "weekly": {
+      "type": "object",
+      "required": ["tokens_used", "limit", "pct"],
+      "properties": {
+        "tokens_used": { "type": "integer", "minimum": 0 },
+        "limit":       { "type": "integer", "minimum": 1 },
+        "pct":         { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "model":       { "type": "string", "maxLength": 64 },
+    "rate_bucket": { "type": "string", "enum": ["idle", "low", "medium", "high"] }
+  },
+  "additionalProperties": false
+}

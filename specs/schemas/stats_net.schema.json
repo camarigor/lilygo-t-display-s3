@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "stats/<host>/net",
+  "type": "object",
+  "required": ["ts", "rx_mbps", "tx_mbps"],
+  "properties": {
+    "ts":          { "type": "integer", "minimum": 0 },
+    "iface":       { "type": "string", "maxLength": 32 },
+    "rx_mbps":     { "type": "number", "minimum": 0 },
+    "tx_mbps":     { "type": "number", "minimum": 0 },
+    "rx_total_gb": { "type": "number", "minimum": 0 },
+    "tx_total_gb": { "type": "number", "minimum": 0 }
+  },
+  "additionalProperties": false
+}

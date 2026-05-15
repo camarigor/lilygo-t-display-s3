@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "display/health",
+  "type": "object",
+  "required": ["ts", "uptime_sec", "free_heap_kb", "fw_version"],
+  "properties": {
+    "ts":                         { "type": "integer", "minimum": 0 },
+    "uptime_sec":                 { "type": "integer", "minimum": 0 },
+    "free_heap_kb":               { "type": "integer", "minimum": 0 },
+    "min_free_heap_kb":           { "type": "integer", "minimum": 0 },
+    "psram_free_kb":              { "type": "integer", "minimum": 0 },
+    "wifi_rssi_dbm":              { "type": "integer", "minimum": -120, "maximum": 0 },
+    "mqtt_reconnect_count":       { "type": "integer", "minimum": 0 },
+    "parse_errors":               { "type": "integer", "minimum": 0 },
+    "notification_overlay_count": { "type": "integer", "minimum": 0 },
+    "fw_version":                 { "type": "string", "maxLength": 16 }
+  },
+  "additionalProperties": false
+}

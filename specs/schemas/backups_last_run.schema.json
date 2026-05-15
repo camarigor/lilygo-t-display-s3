@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "backups/<host>/last-run",
+  "type": "object",
+  "required": ["ts", "source_host", "dest_host", "started_at", "duration_sec",
+               "rsyncs_total", "rsyncs_ok", "rsyncs_error", "bytes_sent", "bytes_received"],
+  "properties": {
+    "ts":             { "type": "integer", "minimum": 0 },
+    "source_host":    { "type": "string", "maxLength": 64 },
+    "dest_host":      { "type": "string", "maxLength": 64 },
+    "started_at":     { "type": "integer", "minimum": 0 },
+    "duration_sec":   { "type": "integer", "minimum": 0 },
+    "rsyncs_total":   { "type": "integer", "minimum": 0 },
+    "rsyncs_ok":      { "type": "integer", "minimum": 0 },
+    "rsyncs_error":   { "type": "integer", "minimum": 0 },
+    "bytes_sent":     { "type": "integer", "minimum": 0 },
+    "bytes_received": { "type": "integer", "minimum": 0 },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code"],
+        "properties": {
+          "path": { "type": "string", "maxLength": 256 },
+          "code": { "type": "integer" },
+          "msg":  { "type": "string", "maxLength": 256 }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "stats/<host>/uptime",
+  "type": "object",
+  "required": ["ts", "uptime_sec"],
+  "properties": {
+    "ts":           { "type": "integer", "minimum": 0 },
+    "boot_ts":      { "type": "integer", "minimum": 0 },
+    "uptime_sec":   { "type": "integer", "minimum": 0 },
+    "uptime_human": { "type": "string", "maxLength": 32 }
+  },
+  "additionalProperties": false
+}

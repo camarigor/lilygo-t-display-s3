@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "data/weather/<cidade>",
+  "type": "object",
+  "required": ["ts", "city", "temp_c", "condition", "icon"],
+  "properties": {
+    "ts":           { "type": "integer", "minimum": 0 },
+    "city":         { "type": "string", "maxLength": 64 },
+    "temp_c":       { "type": "number", "minimum": -50, "maximum": 60 },
+    "feels_c":      { "type": "number", "minimum": -50, "maximum": 60 },
+    "humidity_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "wind_kmh":     { "type": "number", "minimum": 0 },
+    "wind_dir":     { "type": "string", "maxLength": 8 },
+    "condition":    { "type": "string", "maxLength": 32 },
+    "icon":         { "type": "string", "maxLength": 32 },
+    "forecast": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["day", "min", "max", "icon"],
+        "properties": {
+          "day":     { "type": "string", "maxLength": 16 },
+          "min":     { "type": "number" },
+          "max":     { "type": "number" },
+          "icon":    { "type": "string", "maxLength": 32 },
+          "rain_mm": { "type": "number", "minimum": 0 }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

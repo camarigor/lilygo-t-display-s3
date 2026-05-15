@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "display/firmware-status",
+  "type": "object",
+  "required": ["ts", "state"],
+  "properties": {
+    "ts":             { "type": "integer", "minimum": 0 },
+    "state":          { "type": "string", "enum": [
+      "idle","downloading","verifying","applying","rebooting","validated",
+      "rollback_triggered","download_failed","checksum_mismatch",
+      "ota_begin_failed","manifest_invalid","up-to-date"
+    ]},
+    "target_version": { "type": "string", "maxLength": 16 },
+    "pct":            { "type": "integer", "minimum": 0, "maximum": 100 },
+    "reason":         { "type": "string", "maxLength": 256 }
+  },
+  "additionalProperties": false
+}
