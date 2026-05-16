@@ -30,13 +30,15 @@ services:
     stop_grace_period: 10s
 
     # ─── Hardening ────────────────────────────────────────────────────────────
+    # Sem `cap_drop: ALL` — entrypoint do telegraf-alpine usa su-exec
+    # (drop privs pra user telegraf) e setcap, ambos precisam de
+    # CAP_SETUID/GID/FCAP. read_only + no-new-privileges + tmpfs já
+    # garantem hardening mínimo.
     read_only: true
     tmpfs:
       - /tmp
     security_opt:
       - no-new-privileges:true
-    cap_drop:
-      - ALL
 
     # ─── Env (injetado pelo Coolify a partir da UI Environment Variables) ────
     environment:
