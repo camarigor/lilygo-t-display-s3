@@ -1,14 +1,18 @@
 name: Build & Push tdisplay-init image
 
+# Dispara automaticamente em mudanças no init (Dockerfile + seed.sh) ou no
+# workflow. Mudanças nos configs Telegraf/nginx vivem no repo
+# `camarigor/camarigor-umbrel-store` — pra rebuild da imagem após mudar
+# configs, rode manualmente: `gh workflow run build-tdisplay-init.yml`.
 on:
   push:
     branches: [main]
     paths:
       - 'tdisplay-init/**'
-      - 'umbrel-store-checkout/camarigor-tdisplay-stack/telegraf-*.conf'
-      - 'umbrel-store-checkout/camarigor-tdisplay-stack/nginx.conf'
       - '.github/workflows/build-tdisplay-init.yml'
   workflow_dispatch:
+  repository_dispatch:
+    types: [umbrel-store-configs-changed]
 
 permissions:
   contents: read
@@ -24,8 +28,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout main repo
         uses: actions/checkout@v4
+
+      - name: Checkout umbrel-store (seed configs source)
+        uses: actions/checkout@v4
+        with:
+          repository: camarigor/camarigor-umbrel-store
+          path: umbrel-store-checkout
+          ref: main
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
