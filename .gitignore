@@ -21,6 +21,8 @@ secrets/
 firmware-builds/
 .pio/
 .cache/
+.venv/
+**/.venv/
 __pycache__/
 *.pyc
 *.pyo
