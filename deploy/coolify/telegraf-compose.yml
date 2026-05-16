@@ -33,6 +33,12 @@ services:
     restart: on-failure
     stop_grace_period: 10s
 
+    # Roda como user `telegraf` (uid 100 na imagem alpine) com primary GID
+    # = ${DOCKER_GROUP_ID} (docker group do host). Necessário pra inputs.docker
+    # conseguir ler /var/run/docker.sock — group_add no PID 1 é resetado pelo
+    # su-exec do entrypoint quando dropa pra user telegraf.
+    user: "100:${DOCKER_GROUP_ID}"
+
     # ─── Hardening ────────────────────────────────────────────────────────────
     # Sem `cap_drop: ALL` — entrypoint do telegraf-alpine usa su-exec
     # (drop privs pra user telegraf) e setcap, ambos precisam de
@@ -57,12 +63,6 @@ services:
       HOST_ETC: "/host/etc"
       HOST_MOUNT_PREFIX: "/host"
 
-    # Adiciona o group `docker` do host ao processo do container — necessário
-    # pra inputs.docker conseguir ler /var/run/docker.sock (entrypoint do
-    # telegraf-alpine roda como user `telegraf`, sem acesso ao socket por default).
-    # GID varia por distro — descubra no host: `getent group docker`
-    group_add:
-      - "${DOCKER_GROUP_ID}"
 
     # ─── Volumes ──────────────────────────────────────────────────────────────
     # telegraf.conf vem de path absoluto host-managed (fora do clone do
