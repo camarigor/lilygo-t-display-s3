@@ -14,10 +14,25 @@ Para hosts sem Coolify mas com Docker, use `companion-compose/`. Sem Docker, use
 
 | Path no repo | Função |
 |---|---|
-| `deploy/coolify/telegraf-compose.yml` | Compose pra Coolify (self-contained — bind-mount relativo) |
+| `deploy/coolify/telegraf-compose.yml` | Compose pra Coolify (clone do git) |
 | `deploy/telegraf/telegraf-system-docker.conf` | Telegraf config, env-parametrizado |
 
 Ambos genéricos — zero valores hardcoded por host.
+
+## Por que o conf vem de path absoluto no host
+
+Coolify roda `docker compose --project-directory <clone-root>`, então mount paths relativos resolvem ao clone (não ao file do compose). O conf precisa ser bind-mountado de um path **fora do clone** pra sobreviver a Stop/Delete do resource e pra evitar quirks de resolução de path.
+
+Pattern: operador faz `scp` 1× do template versionado pro path estável no host, e o compose mountra de lá:
+
+```bash
+ssh <SSH_USER>@<VPS> 'mkdir -p /opt/tdisplay-telegraf'
+scp deploy/telegraf/telegraf-system-docker.conf \
+    <SSH_USER>@<VPS>:/opt/tdisplay-telegraf/telegraf.conf
+ssh <SSH_USER>@<VPS> 'chmod 644 /opt/tdisplay-telegraf/telegraf.conf'
+```
+
+Updates do conf = repete o scp + restart no Coolify UI.
 
 ## Procedimento (orchestrator + user)
 

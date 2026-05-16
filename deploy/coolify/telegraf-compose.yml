@@ -52,16 +52,16 @@ services:
       HOST_MOUNT_PREFIX: "/host"
 
     # ─── Volumes ──────────────────────────────────────────────────────────────
-    # Bind-mount sem ".." pra evitar Coolify resolver path como saindo do
-    # project_directory. `./telegraf.conf` é symlink relativo que aponta pro
-    # template real em deploy/telegraf/telegraf-system-docker.conf — Docker
-    # resolve o symlink no host antes do mount.
+    # telegraf.conf vem de path absoluto host-managed (fora do clone do
+    # Coolify) — sobrevive a recreates do resource. Operador faz scp do
+    # template versionado em deploy/telegraf/telegraf-system-docker.conf
+    # pro path abaixo. Updates do conf = re-scp + restart no Coolify.
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /etc/hostname:/host/etc/hostname:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /opt/tdisplay-telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
 
     # ─── Network ──────────────────────────────────────────────────────────────
     # Compartilha namespace de rede de um container Tailscale já rodando
