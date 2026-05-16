@@ -20,6 +20,8 @@
 #    MQTT_HOST             broker IP/hostname (Tailscale interno, NÃO público)
 #    MQTT_PORT             default 1883
 #    MQTT_PASS_COLLECTOR   senha collector-<TELEGRAF_HOSTNAME> (marcar como secret)
+#    DOCKER_GROUP_ID       GID do group `docker` no host (varia por distro;
+#                          descubra com: getent group docker)
 #
 #  Pinned image: telegraf:1.31-alpine
 # =============================================================================
@@ -54,6 +56,13 @@ services:
       HOST_SYS: "/host/sys"
       HOST_ETC: "/host/etc"
       HOST_MOUNT_PREFIX: "/host"
+
+    # Adiciona o group `docker` do host ao processo do container — necessário
+    # pra inputs.docker conseguir ler /var/run/docker.sock (entrypoint do
+    # telegraf-alpine roda como user `telegraf`, sem acesso ao socket por default).
+    # GID varia por distro — descubra no host: `getent group docker`
+    group_add:
+      - "${DOCKER_GROUP_ID}"
 
     # ─── Volumes ──────────────────────────────────────────────────────────────
     # telegraf.conf vem de path absoluto host-managed (fora do clone do

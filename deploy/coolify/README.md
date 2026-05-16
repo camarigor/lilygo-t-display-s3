@@ -70,8 +70,11 @@ Na aba **Environment Variables** do resource recém-criado, adicione:
 | `MQTT_PORT`          | `1883`                         | não     |
 | `MQTT_PASS_COLLECTOR`| *(conteúdo de `secrets/collector-<HOST_ID>.pass`)* | **sim** |
 | `NETWORK_CONTAINER`  | nome do container Tailscale com subnet route ativa pra LAN do broker | não |
+| `DOCKER_GROUP_ID`    | GID do group `docker` no host (descobrir com `getent group docker`) | não |
 
 > **NÃO use `HOSTNAME`** — Docker sobrescreve essa var com container ID em containers com `network_mode: container:*` (este é o caso). `TELEGRAF_HOSTNAME` é o nome neutro que o conf consome.
+
+> **`DOCKER_GROUP_ID`** é necessário porque o entrypoint do `telegraf-alpine` roda como user `telegraf` (não-root) e precisa pertencer ao group `docker` do host pra ler `/var/run/docker.sock`. O GID varia por distro (Debian 12: `988`, Ubuntu 22.04: `999`, etc).
 
 ### 4. Descobrir `NETWORK_CONTAINER`
 
