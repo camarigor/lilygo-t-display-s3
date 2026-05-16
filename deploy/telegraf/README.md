@@ -15,10 +15,12 @@ Ambos são **templates 100% parametrizados via env vars** — zero valores hardc
 
 | Variável | Resolve em |
 |---|---|
-| `HOSTNAME` | `[agent].hostname`, topic `stats/${HOSTNAME}/*`, username `collector-${HOSTNAME}`, client_id `telegraf-${HOSTNAME}` |
+| `TELEGRAF_HOSTNAME` | `[agent].hostname`, topic `stats/${TELEGRAF_HOSTNAME}/*`, username `collector-${TELEGRAF_HOSTNAME}`, client_id `telegraf-${TELEGRAF_HOSTNAME}` |
 | `MQTT_HOST` | IP/hostname do broker MQTT |
 | `MQTT_PORT` | Porta do broker (default `1883`) |
-| `MQTT_PASS_COLLECTOR` | Senha do user `collector-${HOSTNAME}` (gerada por `scripts/generate-secrets.sh`) |
+| `MQTT_PASS_COLLECTOR` | Senha do user `collector-${TELEGRAF_HOSTNAME}` (gerada por `scripts/generate-secrets.sh`) |
+
+> **Por que `TELEGRAF_HOSTNAME` e não `HOSTNAME`?** Docker sobrescreve a env var `HOSTNAME` com container ID em containers com `network_mode: container:*`. Nome neutro evita o conflito.
 
 A ACL do mosquitto (gerada por `scripts/generate-envs.sh`) já autoriza cada `collector-<id>` a publicar apenas em `stats/<id>/#`.
 

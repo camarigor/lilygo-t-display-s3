@@ -65,11 +65,13 @@ Na aba **Environment Variables** do resource recém-criado, adicione:
 
 | Key                  | Value                          | Secret? |
 | -------------------- | ------------------------------ | ------- |
-| `HOSTNAME`           | `<HOST_ID>`                    | não     |
+| `TELEGRAF_HOSTNAME`  | `<HOST_ID>`                    | não     |
 | `MQTT_HOST`          | `<MQTT_BROKER_IP>`             | não     |
 | `MQTT_PORT`          | `1883`                         | não     |
 | `MQTT_PASS_COLLECTOR`| *(conteúdo de `secrets/collector-<HOST_ID>.pass`)* | **sim** |
 | `NETWORK_CONTAINER`  | nome do container Tailscale com subnet route ativa pra LAN do broker | não |
+
+> **NÃO use `HOSTNAME`** — Docker sobrescreve essa var com container ID em containers com `network_mode: container:*` (este é o caso). `TELEGRAF_HOSTNAME` é o nome neutro que o conf consome.
 
 ### 4. Descobrir `NETWORK_CONTAINER`
 

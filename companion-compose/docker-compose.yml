@@ -26,7 +26,7 @@ services:
     container_name: companion-telegraf
     restart: on-failure
 
-    # Env vars (HOSTNAME, MQTT_HOST, MQTT_PORT, MQTT_PASS_COLLECTOR, etc.)
+    # Env vars (TELEGRAF_HOSTNAME, MQTT_HOST, MQTT_PORT, MQTT_PASS_COLLECTOR, etc.)
     # vêm do .env via env_file. Telegraf substitui ${VAR} no .conf antes
     # de parse TOML.
     env_file:

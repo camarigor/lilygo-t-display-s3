@@ -14,10 +14,12 @@
 #  no clone — config sempre em sync com o repo.
 #
 #  Env vars são configuradas via Coolify UI (Environment Variables tab):
-#    HOSTNAME              id único do host (vira stats/<HOSTNAME>/*)
+#    TELEGRAF_HOSTNAME     id único do host (vira stats/<TELEGRAF_HOSTNAME>/*)
+#                          NÃO use `HOSTNAME` — Docker sobrescreve a var com
+#                          container ID em containers com network_mode: container:*
 #    MQTT_HOST             broker IP/hostname (Tailscale interno, NÃO público)
 #    MQTT_PORT             default 1883
-#    MQTT_PASS_COLLECTOR   senha collector-<HOSTNAME> (marcar como secret)
+#    MQTT_PASS_COLLECTOR   senha collector-<TELEGRAF_HOSTNAME> (marcar como secret)
 #
 #  Pinned image: telegraf:1.31-alpine
 # =============================================================================
@@ -42,7 +44,7 @@ services:
 
     # ─── Env (injetado pelo Coolify a partir da UI Environment Variables) ────
     environment:
-      HOSTNAME: ${HOSTNAME}
+      TELEGRAF_HOSTNAME: ${TELEGRAF_HOSTNAME}
       MQTT_HOST: ${MQTT_HOST}
       MQTT_PORT: ${MQTT_PORT:-1883}
       MQTT_PASS_COLLECTOR: ${MQTT_PASS_COLLECTOR}

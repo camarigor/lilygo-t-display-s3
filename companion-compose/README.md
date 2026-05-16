@@ -6,7 +6,7 @@ Docker Compose stack que roda no **host definido por `COMPANION_HOST`** (no `.en
 
 Apenas um service:
 
-- **`telegraf`** — publica stats (cpu, mem, disk, net, system, docker) no broker MQTT em `tcp://${MQTT_HOST}:${MQTT_PORT}` sob tópico `stats/${HOSTNAME}/<plugin>`. Configuração em [`../deploy/telegraf/telegraf-system-docker.conf`](../deploy/telegraf/telegraf-system-docker.conf), genérica, montada read-only no container.
+- **`telegraf`** — publica stats (cpu, mem, disk, net, system, docker) no broker MQTT em `tcp://${MQTT_HOST}:${MQTT_PORT}` sob tópico `stats/${TELEGRAF_HOSTNAME}/<plugin>`. Configuração em [`../deploy/telegraf/telegraf-system-docker.conf`](../deploy/telegraf/telegraf-system-docker.conf), genérica, montada read-only no container.
 
 Plan 3 vai expandir este compose com daemons companion:
 - `dbus-listener` (Teams/Telegram notifications → MQTT)
@@ -31,13 +31,13 @@ No diretório raiz do repo:
 
 Isso (re)gera `companion-compose/.env` (chmod 600, gitignored) com:
 
-- `HOSTNAME=${COMPANION_HOST}`
+- `TELEGRAF_HOSTNAME=${COMPANION_HOST}`
 - `MQTT_HOST`, `MQTT_PORT` — resolvido de `MQTT_BROKER_HOST` no `.env` raiz
-- `MQTT_USER_COLLECTOR=collector-${HOSTNAME}`, `MQTT_PASS_COLLECTOR=…`
-- `MQTT_USER_DAEMON=daemon-${HOSTNAME}`, `MQTT_PASS_DAEMON=…` (Plan 3)
+- `MQTT_USER_COLLECTOR=collector-${TELEGRAF_HOSTNAME}`, `MQTT_PASS_COLLECTOR=…`
+- `MQTT_USER_DAEMON=daemon-${TELEGRAF_HOSTNAME}`, `MQTT_PASS_DAEMON=…` (Plan 3)
 - `BACKUP_LOG_PATH`, `TOPIC_PREFIX_*`, `TOPIC_CLAUDE_USAGE`, `LOG_LEVEL`, `TZ` — Plan 3; **`telegraf` ignora**
 
-> Telegraf lê apenas `HOSTNAME`, `MQTT_HOST`, `MQTT_PORT`, `MQTT_PASS_COLLECTOR` do `.env`.
+> Telegraf lê apenas `TELEGRAF_HOSTNAME`, `MQTT_HOST`, `MQTT_PORT`, `MQTT_PASS_COLLECTOR` do `.env`.
 
 ## 2. Subir só o `telegraf`
 
@@ -58,10 +58,10 @@ De qualquer host na LAN (com `mosquitto-clients`):
 mosquitto_sub \
   -h "${MQTT_HOST}" \
   -u admin -P "$(cat ../secrets/admin.pass)" \
-  -t "stats/${HOSTNAME}/#" -v
+  -t "stats/${TELEGRAF_HOSTNAME}/#" -v
 ```
 
-Esperado a cada 30s: linhas em `stats/${HOSTNAME}/{cpu,mem,disk,net,system,docker}`, todas com payload JSON.
+Esperado a cada 30s: linhas em `stats/${TELEGRAF_HOSTNAME}/{cpu,mem,disk,net,system,docker}`, todas com payload JSON.
 
 ## 4. Parar / reiniciar
 
