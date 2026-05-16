@@ -51,3 +51,7 @@ docs/
 .DS_Store?
 ._*
 Thumbs.db
+
+# Generated/merged local configs (derivam de templates + .env real)
+mosquitto-config/*.merged
+router-configs/.generated/
