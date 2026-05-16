@@ -179,11 +179,9 @@ echo "✓ companion-compose/.env"
 echo "✓ mosquitto-config/acl"
 
 # ─── 4) mosquitto-config/passwd (plain text; mosquitto_passwd -U pra bcrypt) ─
+# IMPORTANTE: SEM comentários no arquivo — mosquitto_passwd -U rejeita.
+# Documentação fica neste script + README do mosquitto-config/.
 {
-  echo "# Plain user:password list. Rode:"
-  echo "#   mosquitto_passwd -U mosquitto-config/passwd"
-  echo "# pra converter pra bcrypt antes de copiar pro container."
-  echo ""
   for user_pass_file in secrets/*.pass; do
     [ -e "$user_pass_file" ] || continue
     user=$(basename "$user_pass_file" .pass)
