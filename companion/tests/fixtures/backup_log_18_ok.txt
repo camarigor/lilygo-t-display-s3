@@ -1,0 +1,15 @@
+2026/05/15 13:30:00 [953001] building file list
+2026/05/15 13:30:01 [953001] sent 100 bytes  received 50 bytes  150.00 bytes/sec
+2026/05/15 13:30:01 [953001] total size is 1.00M  speedup is 6,666.67
+2026/05/15 13:30:01 [953002] building file list
+2026/05/15 13:30:02 [953002] sent 200 bytes  received 100 bytes  300.00 bytes/sec
+2026/05/15 13:30:02 [953002] total size is 2.00M  speedup is 6,666.67
+2026/05/15 13:30:02 [953003] building file list
+2026/05/15 13:30:03 [953003] sent 50 bytes  received 25 bytes  75.00 bytes/sec
+2026/05/15 13:30:03 [953003] total size is 512.00K  speedup is 6,826.67
+2026/05/15 13:30:03 [953004] building file list
+2026/05/15 13:30:04 [953004] sent 300 bytes  received 150 bytes  450.00 bytes/sec
+2026/05/15 13:30:04 [953004] total size is 3.00M  speedup is 6,666.67
+2026/05/15 13:30:04 [953005] building file list
+2026/05/15 13:30:05 [953005] sent 75 bytes  received 38 bytes  113.00 bytes/sec
+2026/05/15 13:30:05 [953005] total size is 768.00K  speedup is 6,796.46

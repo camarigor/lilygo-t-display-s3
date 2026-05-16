@@ -1,0 +1,11 @@
+2026/05/15 13:30:00 [953001] building file list
+2026/05/15 13:30:01 [953001] total size is 1.00M  speedup is 6,666.67
+2026/05/15 13:30:01 [953002] building file list
+2026/05/15 13:30:02 [953002] rsync: [sender] link_stat "/some/missing/path" failed: No such file or directory (2)
+2026/05/15 13:30:02 [953002] rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026/05/15 13:30:02 [953003] building file list
+2026/05/15 13:30:03 [953003] total size is 2.00M  speedup is 6,666.67
+2026/05/15 13:30:03 [953004] building file list
+2026/05/15 13:30:04 [953004] rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1338) [sender=3.2.7]
+2026/05/15 13:30:04 [953005] building file list
+2026/05/15 13:30:05 [953005] total size is 1.50M  speedup is 6,666.67

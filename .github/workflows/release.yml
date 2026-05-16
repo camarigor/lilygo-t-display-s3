@@ -35,6 +35,10 @@ jobs:
             context: .
             dockerfile: ./tdisplay-init/Dockerfile
             needs_store: true
+          - image: tdisplay-companion
+            context: ./companion
+            dockerfile: ./companion/Dockerfile
+            needs_store: false
     steps:
       - name: Checkout tagged commit
         uses: actions/checkout@v4

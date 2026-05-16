@@ -3,21 +3,20 @@
 #
 #  Roda no host definido por COMPANION_HOST (no .env raiz do repo).
 #
-#  Escopo Plan 2: apenas `telegraf` (system + docker stats).
-#  Plan 3 vai extender este file com daemons companion (dbus-listener,
-#  claude-usage-emitter, backup-watcher). Eles se anexam à network
-#  `companion` declarada aqui e reusam o mesmo env_file — sem refactor
-#  do telegraf necessário.
+#  Services:
+#    - telegraf:           system + docker stats (Plan 2)
+#    - companion:          D-Bus notif listener + Claude usage + backup watcher
+#                          (Plan 3) — single-image asyncio app
 #
 #  Run from this directory:
-#    docker compose up -d telegraf
+#    docker compose up -d
 #
 #  Env source: ./.env  (gerado por ../scripts/generate-envs.sh, chmod 600, gitignored)
 #  Conf source: ../deploy/telegraf/telegraf-system-docker.conf  (commitado, genérico)
 #
 #  O repo precisa estar presente no host num path estável (ex.: ~/git/lilygo-t-display-s3)
-#  e `docker compose` invocado de dentro de companion-compose/ pra que o mount
-#  relativo resolva.
+#  e `docker compose` invocado de dentro de companion-compose/ pra que mounts
+#  relativos resolvam.
 # =============================================================================
 
 services:
@@ -26,15 +25,10 @@ services:
     container_name: companion-telegraf
     restart: on-failure
 
-    # Env vars (TELEGRAF_HOSTNAME, MQTT_HOST, MQTT_PORT, MQTT_PASS_COLLECTOR, etc.)
-    # vêm do .env via env_file. Telegraf substitui ${VAR} no .conf antes
-    # de parse TOML.
     env_file:
       - ./.env
 
     environment:
-      # Necessário pra Telegraf ler host filesystem em vez do namespace
-      # do container. Sem isso, métricas cpu/mem/disk ficam erradas.
       HOST_PROC: /host/proc
       HOST_SYS: /host/sys
       HOST_ETC: /host/etc
@@ -50,19 +44,52 @@ services:
       - /etc/hostname:/host/etc/hostname:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
-    # ─── Hardening ────────────────────────────────────────────────────────────
     read_only: true
     tmpfs:
       - /tmp:size=16m,mode=1777
     security_opt:
       - no-new-privileges:true
 
-# Scaffold pro Plan 3:
-# - Daemons novos (dbus-listener, claude-usage-emitter, backup-watcher) se
-#   anexam à network `companion` declarada abaixo
-# - Reusam env_file: ./.env
-# - Adicione named volumes aqui apenas quando um daemon precisar persistência
+  companion:
+    image: ghcr.io/camarigor/tdisplay-companion:1.2.0
+    container_name: companion-daemons
+    restart: on-failure
 
+    # Roda como user host (necessário pra ler ${HOME}/.claude e D-Bus session)
+    user: "${UID}:${GID}"
+
+    env_file:
+      - ./.env
+
+    environment:
+      # Companion lê TELEGRAF_HOSTNAME do .env (mesma var que telegraf usa),
+      # MQTT_USER mapeia pro user daemon, MQTT_PASS pra senha daemon.
+      MQTT_USER: ${MQTT_USER_DAEMON}
+      MQTT_PASS: ${MQTT_PASS_DAEMON}
+      DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/${UID}/bus"
+      CLAUDE_PROJECTS_DIR: /data/claude/projects
+      BACKUP_LOG_PATH: /data/backup.log
+      FILTER_APPS: "teams-for-linux,org.telegram.desktop"
+
+    networks:
+      - companion
+
+    volumes:
+      # D-Bus session bus do host (ler notificações desktop)
+      - /run/user/${UID}/bus:/run/user/${UID}/bus:ro
+      # Claude Code projects (transcripts pra usage poller)
+      - ${HOME}/.claude:/data/claude:ro
+      # rsync backup log (watcher tail)
+      - ${BACKUP_LOG_PATH}:/data/backup.log:ro
+
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+
+# Network compartilhada entre services. Mantém scaffold extensível pra
+# daemons adicionais futuros — basta declarar service novo + `networks: [companion]`.
 networks:
   companion:
     name: companion

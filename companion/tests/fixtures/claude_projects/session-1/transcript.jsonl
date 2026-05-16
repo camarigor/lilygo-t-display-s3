@@ -1,0 +1,4 @@
+{"type":"user","timestamp":"2026-05-15T22:00:00Z","tokens_in":250,"tokens_out":0}
+{"type":"assistant","timestamp":"2026-05-15T22:00:05Z","tokens_in":0,"tokens_out":1500,"model":"claude-opus-4-7"}
+{"type":"user","timestamp":"2026-05-15T22:05:00Z","tokens_in":300,"tokens_out":0}
+{"type":"assistant","timestamp":"2026-05-15T22:05:08Z","tokens_in":0,"tokens_out":2000,"model":"claude-opus-4-7"}
