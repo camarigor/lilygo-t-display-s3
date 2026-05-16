@@ -1,0 +1,117 @@
+name: Release (build & push images)
+
+# Pattern: 1 git tag `v*` → 1 release coordenada de TODAS as imagens
+# custom da stack (matrix). Gated em CI success — só builda se testes
+# passaram + tag aponta pro mesmo commit.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: tdisplay-data-collector
+            context: ./data-collector
+            dockerfile: ./data-collector/Dockerfile
+            needs_store: false
+          - image: tdisplay-init
+            context: .
+            dockerfile: ./tdisplay-init/Dockerfile
+            needs_store: true
+    steps:
+      - name: Checkout tagged commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Checkout umbrel-store (seed configs source)
+        if: matrix.needs_store
+        uses: actions/checkout@v4
+        with:
+          repository: camarigor/camarigor-umbrel-store
+          path: umbrel-store-checkout
+          ref: main
+
+      - name: Resolve v* tag for this commit
+        id: tag
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          tag=$(git tag --points-at "$HEAD_SHA" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+          if [ -z "$tag" ]; then
+            echo "No v* tag points at $HEAD_SHA — skipping image build."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found tag: $tag"
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            echo "ref=$tag" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup QEMU
+        if: steps.tag.outputs.build == 'true'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Buildx
+        if: steps.tag.outputs.build == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        if: steps.tag.outputs.build == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        if: steps.tag.outputs.build == 'true'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ steps.tag.outputs.ref }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.tag.outputs.ref }}
+            type=raw,value=latest
+
+      - name: Build & push
+        if: steps.tag.outputs.build == 'true'
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          provenance: true
+          sbom: true
+
+      - name: Attest build provenance
+        if: steps.tag.outputs.build == 'true'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
