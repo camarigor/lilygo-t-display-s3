@@ -1,0 +1,69 @@
+# =============================================================================
+#  telegraf-compose.yml — Coolify "Resource from Git Repository"
+#
+#  Deploy via Coolify UI:
+#    New Resource → Docker Compose → from Git Repository
+#      Repository: https://github.com/camarigor/lilygo-t-display-s3
+#      Branch:     main
+#      Compose:    deploy/coolify/telegraf-compose.yml
+#
+#  Coolify clona o repo em /data/coolify/applications/<id>/source/ e roda
+#  `docker compose -f deploy/coolify/telegraf-compose.yml up -d`. Como bind-mounts
+#  relativos resolvem ao DIRETÓRIO do compose file (não CWD), o mount
+#  `../telegraf/telegraf-system-docker.conf` aponta pra `deploy/telegraf/...`
+#  no clone — config sempre em sync com o repo.
+#
+#  Env vars são configuradas via Coolify UI (Environment Variables tab):
+#    HOSTNAME              id único do host (vira stats/<HOSTNAME>/*)
+#    MQTT_HOST             broker IP/hostname (Tailscale interno, NÃO público)
+#    MQTT_PORT             default 1883
+#    MQTT_PASS_COLLECTOR   senha collector-<HOSTNAME> (marcar como secret)
+#
+#  Pinned image: telegraf:1.31-alpine
+# =============================================================================
+
+services:
+  telegraf:
+    image: telegraf:1.31-alpine
+    container_name: telegraf-collector
+    restart: on-failure
+    stop_grace_period: 10s
+
+    # ─── Hardening ────────────────────────────────────────────────────────────
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+    # ─── Env (injetado pelo Coolify a partir da UI Environment Variables) ────
+    environment:
+      HOSTNAME: ${HOSTNAME}
+      MQTT_HOST: ${MQTT_HOST}
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_PASS_COLLECTOR: ${MQTT_PASS_COLLECTOR}
+      # Telegraf precisa de /host/{proc,sys,etc} pra ler do host (não namespace
+      # do container). Sem isso, métricas cpu/mem/disk ficam erradas.
+      HOST_PROC: "/host/proc"
+      HOST_SYS: "/host/sys"
+      HOST_ETC: "/host/etc"
+      HOST_MOUNT_PREFIX: "/host"
+
+    # ─── Volumes ──────────────────────────────────────────────────────────────
+    # Bind-mount relativo → resolve a partir do dir do compose file
+    # (deploy/coolify/) no clone que Coolify faz.
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/hostname:/host/etc/hostname:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ../telegraf/telegraf-system-docker.conf:/etc/telegraf/telegraf.conf:ro
+
+    # ─── Network ──────────────────────────────────────────────────────────────
+    # Default bridge — assume host tem rota Tailscale pro broker IP
+    # (`tailscale ip` retorna IP + broker é peer visível).
+    # Pra deploy onde Coolify roda Tailscale sidecar em rede compartilhada,
+    # mude pra `networks: [coolify]` + bloco external no fim do arquivo.
+    network_mode: bridge

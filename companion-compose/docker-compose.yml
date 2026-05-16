@@ -1,0 +1,69 @@
+# =============================================================================
+#  companion-compose / docker-compose.yml
+#
+#  Roda no host definido por COMPANION_HOST (no .env raiz do repo).
+#
+#  Escopo Plan 2: apenas `telegraf` (system + docker stats).
+#  Plan 3 vai extender este file com daemons companion (dbus-listener,
+#  claude-usage-emitter, backup-watcher). Eles se anexam à network
+#  `companion` declarada aqui e reusam o mesmo env_file — sem refactor
+#  do telegraf necessário.
+#
+#  Run from this directory:
+#    docker compose up -d telegraf
+#
+#  Env source: ./.env  (gerado por ../scripts/generate-envs.sh, chmod 600, gitignored)
+#  Conf source: ../deploy/telegraf/telegraf-system-docker.conf  (commitado, genérico)
+#
+#  O repo precisa estar presente no host num path estável (ex.: ~/git/lilygo-t-display-s3)
+#  e `docker compose` invocado de dentro de companion-compose/ pra que o mount
+#  relativo resolva.
+# =============================================================================
+
+services:
+  telegraf:
+    image: telegraf:1.31-alpine
+    container_name: companion-telegraf
+    restart: on-failure
+
+    # Env vars (HOSTNAME, MQTT_HOST, MQTT_PORT, MQTT_PASS_COLLECTOR, etc.)
+    # vêm do .env via env_file. Telegraf substitui ${VAR} no .conf antes
+    # de parse TOML.
+    env_file:
+      - ./.env
+
+    environment:
+      # Necessário pra Telegraf ler host filesystem em vez do namespace
+      # do container. Sem isso, métricas cpu/mem/disk ficam erradas.
+      HOST_PROC: /host/proc
+      HOST_SYS: /host/sys
+      HOST_ETC: /host/etc
+      HOST_MOUNT_PREFIX: /host
+
+    networks:
+      - companion
+
+    volumes:
+      - ../deploy/telegraf/telegraf-system-docker.conf:/etc/telegraf/telegraf.conf:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/hostname:/host/etc/hostname:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    # ─── Hardening ────────────────────────────────────────────────────────────
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+
+# Scaffold pro Plan 3:
+# - Daemons novos (dbus-listener, claude-usage-emitter, backup-watcher) se
+#   anexam à network `companion` declarada abaixo
+# - Reusam env_file: ./.env
+# - Adicione named volumes aqui apenas quando um daemon precisar persistência
+
+networks:
+  companion:
+    name: companion
+    driver: bridge
