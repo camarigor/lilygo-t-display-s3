@@ -62,8 +62,10 @@ services:
       - ../telegraf/telegraf-system-docker.conf:/etc/telegraf/telegraf.conf:ro
 
     # ─── Network ──────────────────────────────────────────────────────────────
-    # Default bridge — assume host tem rota Tailscale pro broker IP
-    # (`tailscale ip` retorna IP + broker é peer visível).
-    # Pra deploy onde Coolify roda Tailscale sidecar em rede compartilhada,
-    # mude pra `networks: [coolify]` + bloco external no fim do arquivo.
-    network_mode: bridge
+    # Compartilha namespace de rede de um container Tailscale já rodando
+    # (que tem subnet route ativa pra LAN do broker). Nome do container vem
+    # de ${NETWORK_CONTAINER} (set via Coolify UI).
+    #
+    # Trade-off: se Coolify recriar esse container, o nome muda — atualize
+    # a env var NETWORK_CONTAINER e re-deploy.
+    network_mode: "container:${NETWORK_CONTAINER}"

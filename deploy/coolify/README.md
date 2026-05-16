@@ -54,18 +54,27 @@ Na aba **Environment Variables** do resource recém-criado, adicione:
 | `MQTT_HOST`          | `<MQTT_BROKER_IP>`             | não     |
 | `MQTT_PORT`          | `1883`                         | não     |
 | `MQTT_PASS_COLLECTOR`| *(conteúdo de `secrets/collector-<HOST_ID>.pass`)* | **sim** |
+| `NETWORK_CONTAINER`  | nome do container Tailscale com subnet route ativa pra LAN do broker | não |
 
-### 4. Escolher modo de rede
+### 4. Descobrir `NETWORK_CONTAINER`
 
-Duas opções no compose, dependendo de como Tailscale está wired:
-
-- **(A) Host tem rota Tailscale pra LAN do broker** — `network_mode: bridge` (default). Container alcança broker via routing table do host.
-- **(B) Coolify roda Tailscale sidecar em network compartilhada** — comente `network_mode: bridge` no compose, troque por `networks: [coolify]` + adicione bloco `networks: coolify: external: true` no fim. Edite via Coolify UI no campo do compose.
-
-Detectar qual escolher:
+Lista containers Tailscale rodando no host:
 ```bash
-ssh <SSH_USER>@<VPS> 'tailscale ip && tailscale status'
+ssh <SSH_USER>@<VPS> 'docker ps --filter "ancestor=tailscale/tailscale:latest" \
+  --format "{{.Names}}"'
 ```
+
+Pra cada um, teste qual alcança a LAN do broker:
+```bash
+for c in $(ssh <SSH_USER>@<VPS> 'docker ps --filter "ancestor=tailscale/tailscale:latest" --format "{{.Names}}"'); do
+  echo "$c:"
+  ssh <SSH_USER>@<VPS> "docker exec $c sh -c 'ping -c 2 -W 2 <MQTT_BROKER_IP>' 2>&1 | tail -2"
+done
+```
+
+O container que retorna `0% packet loss` é o que tem subnet route. Use esse nome em `NETWORK_CONTAINER`.
+
+**Caveat**: nomes gerados pelo Coolify (tipo `tailscale-client-xxxxxxxxxxxxx`) podem mudar se Coolify recriar o container — após qualquer rebuild do Tailscale resource, refaz o discovery e atualiza `NETWORK_CONTAINER` no Coolify UI.
 
 ### 5. Deploy + validar
 
