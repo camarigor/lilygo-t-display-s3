@@ -2,3 +2,4 @@
 "pipx:esptool" = "latest"
 "pipx:ruff" = "0.6.9"
 "pipx:pytest" = "8.3.3"
+"pipx:platformio" = "latest"

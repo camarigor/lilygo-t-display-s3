@@ -1,0 +1,3 @@
+include/generated_config.h
+include/secrets.h
+.pio/
