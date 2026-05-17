@@ -51,7 +51,7 @@ services:
       - no-new-privileges:true
 
   companion:
-    image: ghcr.io/camarigor/tdisplay-companion:1.2.0
+    image: ghcr.io/camarigor/tdisplay-companion:1.2.1
     container_name: companion-daemons
     restart: on-failure
 
@@ -87,6 +87,10 @@ services:
       - /tmp:size=16m,mode=1777
     security_opt:
       - no-new-privileges:true
+      # apparmor:unconfined necessário pra D-Bus BecomeMonitor (eavesdrop privilegiado);
+      # default profile do Docker bloqueia. user non-root + read_only + no-new-privileges
+      # mantém o resto do hardening.
+      - apparmor:unconfined
 
 # Network compartilhada entre services. Mantém scaffold extensível pra
 # daemons adicionais futuros — basta declarar service novo + `networks: [companion]`.
