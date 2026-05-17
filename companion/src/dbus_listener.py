@@ -12,12 +12,10 @@ import logging
 import re
 import time
 import uuid
-from typing import Any
 
 import bleach
 
 from listener import Listener
-from mqtt_client import MqttClient
 
 log = logging.getLogger(__name__)
 
